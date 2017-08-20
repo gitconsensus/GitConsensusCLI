@@ -18,6 +18,15 @@ threshold: 0.65
 # Only process votes by contributors
 contributors_only: false
 
+# Only process votes by collaborators
+collaborators_only: false
+
+# When defined only process votes from these github users
+whitelist:
+  - alice
+  - bob
+  - carol
+
 # Number of days after last commit before issue can be merged
 mergedelay: 3
 
@@ -39,13 +48,17 @@ token from Github that will be used in place of your username and password (whic
 Merge all pull requests that meet consensus rules.
 
 ```shell
-gitconsensus auth USERNAME REPOSITORY
+gitconsensus merge USERNAME REPOSITORY
 ```
 
-## Merge
+## Close
 
-Merge all pull requests that have passed the "timeout" date (if it is set).
+Close all pull requests that have passed the "timeout" date (if it is set).
 
 ```shell
 gitconsensus close USERNAME REPOSITORY
 ```
+
+## Label Overrides
+
+Any Pull Request with the `WIP` or `DONTMERGE` label (case insensitive) will be skipped over.
