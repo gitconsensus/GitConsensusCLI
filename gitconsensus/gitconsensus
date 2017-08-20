@@ -13,7 +13,7 @@ def cli(ctx):
         print(ctx.parent.get_help())
 
 
-@cli.command(short_help="obtain an authorization token")
+@cli.command(short_help="Obtain an authorization token")
 def auth():
     username = click.prompt('Username')
     password = click.prompt('Password', hide_input=True)
@@ -31,7 +31,7 @@ def auth():
         fd.write(auth.token + '\n')
 
 
-@cli.command(short_help="list open pull requests and their status")
+@cli.command(short_help="List open pull requests and their status")
 @click.argument('username')
 @click.argument('repository_name')
 def list(username, repository_name):
@@ -41,7 +41,45 @@ def list(username, repository_name):
         click.echo("PR#%s: %s" % (request.number, request.validate()))
 
 
-@cli.command(short_help="merge open pull requests that validate")
+@cli.command(short_help="Display detailed information about a specific pull request")
+@click.argument('username')
+@click.argument('repository_name')
+@click.argument('pull_request')
+def info(username, repository_name, pull_request):
+    repo = Repository(username, repository_name)
+    request = repo.getPullRequest(pull_request)
+    click.echo("PR#%s: %s" % (request.number, request.pr.title))
+    consensus = repo.getConsensus()
+    click.echo("Mergeable:  %s" % (consensus.isMergeable(request),))
+    click.echo("Is Blocked: %s" % (request.isBlocked(),))
+    click.echo("Has Quorum: %s" % (consensus.hasQuorum(request),))
+    click.echo("Has Votes:  %s" % (consensus.hasVotes(request),))
+    click.echo("Has Aged:   %s" % (consensus.hasAged(request),))
+
+
+@cli.command(short_help="Forced a specific pull request to be merged")
+@click.argument('username')
+@click.argument('repository_name')
+@click.argument('pull_request')
+def forcemerge(username, repository_name, pull_request):
+    repo = Repository(username, repository_name)
+    request = repo.getPullRequest(pull_request)
+    click.echo("PR#%s: %s" % (request.number, request.pr.title))
+    request.vote_merge()
+
+
+@cli.command(short_help="Forced a specific pull request to be closed")
+@click.argument('username')
+@click.argument('repository_name')
+@click.argument('pull_request')
+def forcemerge(username, repository_name, pull_request):
+    repo = Repository(username, repository_name)
+    request = repo.getPullRequest(pull_request)
+    click.echo("PR#%s: %s" % (request.number, request.pr.title))
+    request.close()
+
+
+@cli.command(short_help="Merge open pull requests that validate")
 @click.argument('username')
 @click.argument('repository_name')
 def merge(username, repository_name):
@@ -53,7 +91,7 @@ def merge(username, repository_name):
             request.vote_merge()
 
 
-@cli.command(short_help="close older unmerged opened pull requests")
+@cli.command(short_help="Close older unmerged opened pull requests")
 @click.argument('username')
 @click.argument('repository_name')
 def close(username, repository_name):
@@ -64,7 +102,7 @@ def close(username, repository_name):
             continue
         if request.shouldClose():
             click.echo("Closing PR#%s" % (request.number,))
-            request.pr.close()
+            request.close()
 
 
 

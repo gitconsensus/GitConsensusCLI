@@ -40,6 +40,9 @@ class Repository:
             retpr.append(newpr)
         return retpr
 
+    def getPullRequest(self, number):
+        return PullRequest(self, number)
+
     def isContributor(self, username):
         if not self.contributors:
             contributor_list = self.repository.iter_contributors()
@@ -51,9 +54,12 @@ class Repository:
             self.collaborators[username] = self.repository.is_collaborator(username)
         return self.repository.is_collaborator(username)
 
+    def getConsensus(self):
+        return Consensus(self.rules)
+
 
 class PullRequest:
-
+    labels = False
     def __init__(self, repository, number):
         self.repository = repository
         self.number = number
@@ -84,7 +90,6 @@ class PullRequest:
                 if username not in self.repository.rules['whitelist']:
                     continue
 
-
             if content == '+1':
                 self.yes.append(user['login'])
             elif content == '-1':
@@ -107,13 +112,26 @@ class PullRequest:
         delta = commit_date - now
         return delta.days
 
+    def daysSincePullOpened(self):
+        now = datetime.datetime.now()
+        delta = self.pr.created_at.replace(tzinfo=None) - now
+        return delta.days
+
+    def daysSinceLastUpdate(self):
+        daysOpen = self.daysSincePullOpened()
+        daysSinceCommit = self.daysSinceLastCommit()
+
+        if daysOpen < daysSinceCommit:
+            return daysOpen
+        return daysSinceCommit
+
     def getIssue(self):
         return self.repository.repository.issue(self.number)
 
     def validate(self):
         if self.repository.rules == False:
             return False
-        consenttest = Consensus(self.repository.rules)
+        consenttest = self.repository.getConsensus()
         return consenttest.validate(self)
 
     def shouldClose(self):
@@ -122,30 +140,66 @@ class PullRequest:
                 return True
         return False
 
+    def close(self):
+        self.pr.close()
+        message = """
+This Pull Request has been closed by [GitConsensus](https://github.com/tedivm/GitConsensus).
+
+|||
+| ------ | --- |
+| Yes    | %s  |
+| No     | %s  |
+| Total  | %s  |
+
+        """ % (str(len(self.yes)), str(len(self.no)), str(len(self.users)))
+        self.addComment(message)
+
+
     def vote_merge(self):
-        self.addLabels([
-        'gc-merged',
-        'gc-voters %s' % (len(self.users),),
-        'gc-yes %s' % (len(self.yes),),
-        'gc-no %s' % (len(self.no),),
-        'gc-age %s' % (self.daysSinceLastCommit(),)
-        ])
+
         self.pr.merge('Consensus Merge')
+        self.addLabels(['gc-merged'])
+
+        if 'extra_labels' in self.repository.rules and self.repository.rules['extra_labels']:
+            self.addLabels([
+            'gc-voters %s' % (len(self.users),),
+            'gc-yes %s' % (len(self.yes),),
+            'gc-no %s' % (len(self.no),),
+            'gc-age %s' % (self.daysSinceLastUpdate(),)
+            ])
+
+        message = """
+This Pull Request has been merged by [GitConsensus](https://github.com/tedivm/GitConsensus).
+
+|||
+| ------ | --- |
+| Yes    | %s  |
+| No     | %s  |
+| Total  | %s  |
+
+        """ % (str(len(self.yes)), str(len(self.no)), str(len(self.users)))
+        self.addComment(message)
+
 
     def addLabels(self, labels):
         issue = self.getIssue()
         for label in labels:
             issue.add_labels(label)
 
-    def getLabelList(self):
-        issue = self.getIssue()
-        return issue.labels
+    def addComment(self, comment_string):
+        return self.getIssue().create_comment(comment_string)
 
-    def isBlocked(self, pr):
+    def getLabelList(self):
+        if not self.labels:
+            issue = self.getIssue()
+            self.labels = [item.name for item in issue.labels]
+        return self.labels
+
+    def isBlocked(self):
         labels = [item.lower() for item in self.getLabelList()]
         if 'wip' in labels:
             return True
-        if 'dontmerge':
+        if 'dontmerge' in labels:
             return True
         return False
 
@@ -180,14 +234,17 @@ class Consensus:
 
     def hasVotes(self, pr):
         if 'threshold' in self.rules:
-            ratio = len(pr.yes) / (len(pr.yes) + len(pr.no))
+            total = (len(pr.yes) + len(pr.no))
+            if total <= 0:
+                return False
+            ratio = len(pr.yes) / total
             if ratio < self.rules['threshold']:
                 return False
         return True
 
     def hasAged(self, pr):
         if 'mergedelay' in self.rules:
-            days = pr.daysSinceLastCommit()
-            if days < self.rules['mergdelay']:
+            days = pr.daysSinceLastUpdate()
+            if days < self.rules['mergedelay']:
                 return False
         return True

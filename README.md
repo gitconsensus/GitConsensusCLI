@@ -9,7 +9,11 @@ The file `.gitconsensus.yaml` needs to be placed in the repository to be managed
 will be skipped.
 
 ```yaml
-# minimum number of votes
+
+# Add extra labels for the vote counts and age when merging
+extra_labels: false
+
+# Minimum number of votes
 quorum: 5
 
 # Required percentage of "yes" votes
@@ -34,7 +38,9 @@ mergedelay: 3
 timeout: 30
 ```
 
-## Authentication
+## Commands
+
+### Authentication
 
 ```shell
 gitconsensus auth
@@ -43,7 +49,7 @@ gitconsensus auth
 You will be asked for your username, password, and 2fa token (if configured). This will be used to get an authentication
 token from Github that will be used in place of your username and password (which are never saved).
 
-## Merge
+### Merge
 
 Merge all pull requests that meet consensus rules.
 
@@ -51,7 +57,7 @@ Merge all pull requests that meet consensus rules.
 gitconsensus merge USERNAME REPOSITORY
 ```
 
-## Close
+### Close
 
 Close all pull requests that have passed the "timeout" date (if it is set).
 
@@ -59,6 +65,30 @@ Close all pull requests that have passed the "timeout" date (if it is set).
 gitconsensus close USERNAME REPOSITORY
 ```
 
+### Info
+
+Get detailed infromation about a specific pull request and what rules it passes.
+
+```shell
+gitconsensus info USERNAME REPOSITORY PR_NUMBER
+```
+
+### Force Close
+
+Close specific pull request, including any labels and comments that normally would be sent.
+
+```shell
+gitconsensus forceclose USERNAME REPOSITORY PR_NUMBER
+```
+
+### Force Merge
+
+Merge specific pull request, including any labels and comments that normally would be sent.
+
+```shell
+gitconsensus forcemerge USERNAME REPOSITORY PR_NUMBER
+```
+
 ## Label Overrides
 
-Any Pull Request with the `WIP` or `DONTMERGE` label (case insensitive) will be skipped over.
+Any Pull Request with a `WIP` or `DONTMERGE` label (case insensitive) will be skipped over.
