@@ -20,6 +20,8 @@ class Repository:
     def __init__(self, user, repository):
         self.user = user
         self.name = repository
+        self.contributors = False
+        self.collaborators = {}
         auth = config.getGitToken()
         self.client = github3.login(token=auth['token'])
         self.client.set_user_agent('gitconsensus')
@@ -37,6 +39,17 @@ class Repository:
             newpr = PullRequest(self, pr.number)
             retpr.append(newpr)
         return retpr
+
+    def isContributor(self, username):
+        if not self.contributors:
+            contributor_list = self.repository.iter_contributors()
+            self.contributors = [contributor['login'] for contributor in contributor_list]
+        return username in self.contributors
+
+    def isCollaborator(username):
+        if username not in self.collaborators:
+            self.collaborators[username] = self.repository.is_collaborator(username)
+        return self.repository.is_collaborator(username)
 
 
 class PullRequest:
@@ -57,6 +70,21 @@ class PullRequest:
         for reaction in reactions:
             content = reaction['content']
             user = reaction['user']
+            username = user['login']
+
+            if 'collaborators_only' in self.repository.rules and self.repository.rules['collaborators_only']:
+                if not isCollaborator(username):
+                    continue
+
+            if 'contributors_only' in self.repository.rules and self.repository.rules['contributors_only']:
+                if not self.repository.isContributor(username):
+                    continue
+
+            if 'whitelist' in self.repository.rules:
+                if username not in self.repository.rules['whitelist']:
+                    continue
+
+
             if content == '+1':
                 self.yes.append(user['login'])
             elif content == '-1':
@@ -79,6 +107,9 @@ class PullRequest:
         delta = commit_date - now
         return delta.days
 
+    def getIssue(self):
+        return self.repository.repository.issue(self.number)
+
     def validate(self):
         if self.repository.rules == False:
             return False
@@ -87,13 +118,36 @@ class PullRequest:
 
     def shouldClose(self):
         if 'timeout' in self.repository.rules:
-            if self.repository.rules['timeout'] < self.daysSinceLastCommit():
+            if self.daysSinceLastCommit() >= self.repository.rules['timeout']:
                 return True
         return False
 
-    def merge(self):
+    def vote_merge(self):
+        self.addLabels([
+        'gc-merged',
+        'gc-voters %s' % (len(self.users),),
+        'gc-yes %s' % (len(self.yes),),
+        'gc-no %s' % (len(self.no),),
+        'gc-age %s' % (self.daysSinceLastCommit(),)
+        ])
         self.pr.merge('Consensus Merge')
 
+    def addLabels(self, labels):
+        issue = self.getIssue()
+        for label in labels:
+            issue.add_labels(label)
+
+    def getLabelList(self):
+        issue = self.getIssue()
+        return issue.labels
+
+    def isBlocked(self, pr):
+        labels = [item.lower() for item in self.getLabelList()]
+        if 'wip' in labels:
+            return True
+        if 'dontmerge':
+            return True
+        return False
 
 
 class Consensus:
@@ -101,6 +155,8 @@ class Consensus:
         self.rules = rules
 
     def validate(self, pr):
+        if pr.isBlocked():
+            return False
         if not self.isMergeable(pr):
             return False
         if not self.hasQuorum(pr):
@@ -112,7 +168,7 @@ class Consensus:
         return False
 
     def isMergeable(self, pr):
-        if not pr.mergeable:
+        if not pr.pr.mergeable:
             return False
         return True
 
