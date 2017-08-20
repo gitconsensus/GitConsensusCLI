@@ -60,6 +60,8 @@ def close(username, repository_name):
     repo = Repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
+        if request.isBlocked():
+            continue
         if request.shouldClose():
             click.echo("Closing PR#%s" % (request.number,))
             request.pr.close()
