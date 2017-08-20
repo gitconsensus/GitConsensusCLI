@@ -22,7 +22,7 @@ contributors_only: false
 mergedelay: 3
 
 # Number of days after last commit before issue is autoclosed
-timeout: 3
+timeout: 30
 ```
 
 ## Authentication
