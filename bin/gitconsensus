@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Get real directory in case of symlink
+if [[ -L "${BASH_SOURCE[0]}" ]]
+then
+  DIR="$( cd "$( dirname $( readlink "${BASH_SOURCE[0]}" ) )" && pwd )"
+else
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+fi
+
+ENV="$DIR/../env/bin/activate"
+if [ ! -f $ENV ]; then
+    echo 'Virtual Environment Not Installed- Run `make`'
+    exit -1
+fi
+source $ENV
+
+SCRIPT="$DIR/../gitconsensus/gitconsensus"
+$SCRIPT "$@"
