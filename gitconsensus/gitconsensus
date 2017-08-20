@@ -38,7 +38,7 @@ def list(username, repository_name):
     repo = Repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
-        print("PR#%s: %s" % (request.number, request.validate()))
+        click.echo("PR#%s: %s" % (request.number, request.validate()))
 
 
 @cli.command(short_help="merge open pull requests that validate")
@@ -49,8 +49,8 @@ def merge(username, repository_name):
     requests = repo.getPullRequests()
     for request in requests:
         if request.validate():
-            print("Merging PR#%s" % (request.number,))
-            request.merge()
+            click.echo("Merging PR#%s" % (request.number,))
+            request.vote_merge()
 
 
 @cli.command(short_help="close older unmerged opened pull requests")
@@ -61,7 +61,7 @@ def close(username, repository_name):
     requests = repo.getPullRequests()
     for request in requests:
         if request.shouldClose():
-            print("Closing PR#%s" % (request.number,))
+            click.echo("Closing PR#%s" % (request.number,))
             request.pr.close()
 
 
