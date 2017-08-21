@@ -72,7 +72,7 @@ def forcemerge(username, repository_name, pull_request):
 @click.argument('username')
 @click.argument('repository_name')
 @click.argument('pull_request')
-def forcemerge(username, repository_name, pull_request):
+def forceclose(username, repository_name, pull_request):
     repo = Repository(username, repository_name)
     request = repo.getPullRequest(pull_request)
     click.echo("PR#%s: %s" % (request.number, request.pr.title))
