@@ -5,6 +5,21 @@ import json
 import requests
 import yaml
 
+message_template = """
+This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitConsensus).
+
+## Vote Totals
+
+| Yes | No | Total |
+| --- | -- | ----- |
+| %s  | %s | %s    |
+
+## Vote Breakdown
+
+%s
+"""
+
+
 def githubApiRequest(url):
     auth = config.getGitToken()
     headers = {
@@ -142,22 +157,13 @@ class PullRequest:
 
     def close(self):
         self.pr.close()
-        message = """
-This Pull Request has been closed by [GitConsensus](https://github.com/tedivm/GitConsensus).
-
-|||
-| ------ | --- |
-| Yes    | %s  |
-| No     | %s  |
-| Total  | %s  |
-
-        """ % (str(len(self.yes)), str(len(self.no)), str(len(self.users)))
+        self.addLabels(['gc-closed'])
+        table = self.buildVoteTable()
+        message = message_template % ('closed', str(len(self.yes)), str(len(self.no)), str(len(self.users)), table)
         self.addComment(message)
 
-
     def vote_merge(self):
-
-        self.pr.merge('Consensus Merge')
+        self.pr.merge('GitConsensus Merge')
         self.addLabels(['gc-merged'])
 
         if 'extra_labels' in self.repository.rules and self.repository.rules['extra_labels']:
@@ -167,18 +173,25 @@ This Pull Request has been closed by [GitConsensus](https://github.com/tedivm/Gi
             'gc-no %s' % (len(self.no),),
             'gc-age %s' % (self.daysSinceLastUpdate(),)
             ])
-
-        message = """
-This Pull Request has been merged by [GitConsensus](https://github.com/tedivm/GitConsensus).
-
-|||
-| ------ | --- |
-| Yes    | %s  |
-| No     | %s  |
-| Total  | %s  |
-
-        """ % (str(len(self.yes)), str(len(self.no)), str(len(self.users)))
+        table = self.buildVoteTable()
+        message = message_template % ('merged', str(len(self.yes)), str(len(self.no)), str(len(self.users)), table)
         self.addComment(message)
+
+    def buildVoteTable(self):
+        table = '| User | Yes | No |\n|--------|-----|----|'
+        for user in self.users:
+            if user in self.yes:
+                yes = 'Yes'
+            else:
+                yes = '   '
+            if user in self.no:
+                no = 'No'
+            else:
+                no = '  '
+            user_label = '[%s](https://github.com/%s)' % (user, user)
+            row = "| %s | %s | %s |" % (user_label, yes, no)
+            table = "%s\n%s" % (table, row)
+        return table
 
 
     def addLabels(self, labels):
