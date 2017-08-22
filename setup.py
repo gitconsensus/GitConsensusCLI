@@ -18,7 +18,7 @@ setup(
 
   name = 'gitconsensus',
 
-  version = '0.0.1.dev1',
+  version = '0.1.0',
   packages=find_packages(),
 
   description = 'Automate Github Pull Requests using Reactions',
@@ -28,7 +28,7 @@ setup(
   author = 'Robert Hafner',
   author_email = 'tedivm@tedivm.com',
   url = 'https://github.com/tedivm/gitconsensus',
-  download_url = 'https://github.com/tedivm/gitconsensus/archive/0.1.tar.gz',
+  download_url = 'https://github.com/tedivm/gitconsensus/archive/v0.1.0.tar.gz',
   keywords = 'automation github consensus git',
 
   classifiers = [
