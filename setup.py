@@ -6,9 +6,12 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
+
 
 
 setup(
@@ -34,7 +37,7 @@ setup(
 
     'Intended Audience :: Developers',
     'Intended Audience :: System Administrators',
-    'Topic :: Software Development :: Version Control'
+    'Topic :: Software Development :: Version Control',
 
     'Programming Language :: Python :: 3',
     'Environment :: Console',
@@ -42,15 +45,16 @@ setup(
 
   install_requires=[
     'click>=5.0,<6.0',
-    'github3.py==0.9.6,<0.10',
+    'github3.py>=0.9.6,<0.10',
     'PyYAML>=3.12,<3.13',
     'requests>=2.18.0,<2.19',
   ],
 
   extras_require={
     'dev': [
-      'wheel',
-      'twine'
+      'pypandoc',
+      'twine',
+      'wheel'
     ],
   },
 

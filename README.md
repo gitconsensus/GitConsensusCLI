@@ -42,11 +42,12 @@ timeout: 30
 
 Votes are made by using reactions on the top level comment of the Pull Request.
 
-| Reaction   | Vote    |
-|------------|---------|
-| :+1:       | Yes     |
-| :-1:       | No      |
-| :confused: | Abstain |
+| Reaction | Vote    |
+|----------|---------|
+| ![+1](https://assets-cdn.github.com/images/icons/emoji/unicode/1f44d.png "+1")       | Yes     |
+| ![-1](https://assets-cdn.github.com/images/icons/emoji/unicode/1f44e.png "+1")       | No      |
+| ![confused](https://assets-cdn.github.com/images/icons/emoji/unicode/1f615.png "confused") | Abstain |
+
 
 
 ## Commands
