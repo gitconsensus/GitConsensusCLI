@@ -15,5 +15,4 @@ if [ ! -f $ENV ]; then
 fi
 source $ENV
 
-SCRIPT="$DIR/../gitconsensus/gitconsensus"
-$SCRIPT "$@"
+python -m gitconsensus.gitconsensus "$@"

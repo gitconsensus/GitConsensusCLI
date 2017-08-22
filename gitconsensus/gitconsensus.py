@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 import click
 import github3
 import os
 import random
-from repository import Repository
+from gitconsensus.repository import Repository
 import string
 
 @click.group()
@@ -103,8 +102,6 @@ def close(username, repository_name):
         if request.shouldClose():
             click.echo("Closing PR#%s" % (request.number,))
             request.close()
-
-
 
 if __name__ == '__main__':
     cli()

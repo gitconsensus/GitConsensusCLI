@@ -6,25 +6,25 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 all: dependencies
 
-fresh: fulluninstall dependencies
-
-fulluninstall: uninstall cleancode
-
-install:
-	ln -s -f $(ROOT_DIR)/bin/gitconsensus /usr/local/bin/gitconsensus
-
-dependencies:
-	if [ ! -d $(ROOT_DIR)/env ]; then python3 -m venv $(ROOT_DIR)/env; fi
-	source $(ROOT_DIR)/env/bin/activate; yes w | python3 -m pip install -r $(ROOT_DIR)/requirements.txt
-
-uninstall:
-	if [ -L /usr/local/bin/gitconsensus ]; then \
-		rm /usr/local/bin/gitconsensus; \
-	fi;
-
-cleancode:
+clean:
 	rm -rf $(ROOT_DIR)/*.pyc
 	# Remove existing environment
 	if [ -d $(ROOT_DIR)/env ]; then \
 		rm -rf $(ROOT_DIR)/env; \
 	fi;
+	if [ -d $(ROOT_DIR)/dist ]; then \
+		rm -rf $(ROOT_DIR)/dist; \
+	fi;
+	if [ -d $(ROOT_DIR)/build ]; then \
+		rm -rf $(ROOT_DIR)/build; \
+	fi;
+	if [ -d $(ROOT_DIR)/gitconsensus.egg-info ]; then \
+		rm -rf $(ROOT_DIR)/gitconsensus.egg-info; \
+	fi;
+
+dependencies:
+	if [ ! -d $(ROOT_DIR)/env ]; then python3 -m venv $(ROOT_DIR)/env; fi
+	source $(ROOT_DIR)/env/bin/activate; yes w | python -m pip install -e .[dev]
+
+package:
+	source $(ROOT_DIR)/env/bin/activate; python setup.py bdist_wheel

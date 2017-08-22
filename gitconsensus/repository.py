@@ -1,4 +1,4 @@
-import config
+import gitconsensus.config
 import datetime
 import github3
 import json
