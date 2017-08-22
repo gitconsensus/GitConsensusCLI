@@ -14,8 +14,8 @@ install:
 	ln -s -f $(ROOT_DIR)/bin/gitconsensus /usr/local/bin/gitconsensus
 
 dependencies:
-	if [ ! -d $(ROOT_DIR)/env ]; then virtualenv $(ROOT_DIR)/env; fi
-	source $(ROOT_DIR)/env/bin/activate; yes w | pip install -r $(ROOT_DIR)/requirements.txt
+	if [ ! -d $(ROOT_DIR)/env ]; then python3 -m venv $(ROOT_DIR)/env; fi
+	source $(ROOT_DIR)/env/bin/activate; yes w | python3 -m pip install -r $(ROOT_DIR)/requirements.txt
 
 uninstall:
 	if [ -L /usr/local/bin/gitconsensus ]; then \
