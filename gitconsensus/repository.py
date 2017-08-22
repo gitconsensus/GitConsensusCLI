@@ -87,6 +87,7 @@ class PullRequest:
 
         self.yes = []
         self.no = []
+        self.abstain = []
         self.users = []
         for reaction in reactions:
             content = reaction['content']
@@ -109,6 +110,8 @@ class PullRequest:
                 self.yes.append(user['login'])
             elif content == '-1':
                 self.no.append(user['login'])
+            elif content == 'confused':
+                self.abstain.append(user['login'])
             else:
                 continue
 
@@ -178,18 +181,23 @@ class PullRequest:
         self.addComment(message)
 
     def buildVoteTable(self):
-        table = '| User | Yes | No |\n|--------|-----|----|'
+        table = '| User | Yes | No | Abstain |\n|--------|-----|----|----|'
         for user in self.users:
             if user in self.yes:
-                yes = 'Yes'
+                yes = '✔'
             else:
                 yes = '   '
             if user in self.no:
-                no = 'No'
+                no = '✔'
             else:
                 no = '  '
+            if user in self.abstain:
+                abstain = '✔'
+            else:
+                abstain = '  '
+
             user_label = '[%s](https://github.com/%s)' % (user, user)
-            row = "| %s | %s | %s |" % (user_label, yes, no)
+            row = "| %s | %s | %s | %s |" % (user_label, yes, no, abstain)
             table = "%s\n%s" % (table, row)
         return table
 
