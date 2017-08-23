@@ -13,12 +13,12 @@ except(IOError, ImportError):
     long_description = open('README.md').read()
 
 
-
+version = '0.2.0'
 setup(
 
   name = 'gitconsensus',
 
-  version = '0.2.0',
+  version = version,
   packages=find_packages(),
 
   description = 'Automate Github Pull Requests using Reactions',
@@ -28,7 +28,7 @@ setup(
   author = 'Robert Hafner',
   author_email = 'tedivm@tedivm.com',
   url = 'https://github.com/tedivm/gitconsensus',
-  download_url = 'https://github.com/tedivm/gitconsensus/archive/v0.1.0.tar.gz',
+  download_url = "https://github.com/tedivm/gitconsensus/archive/v%s.tar.gz" % (version),
   keywords = 'automation github consensus git',
 
   classifiers = [
