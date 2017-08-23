@@ -13,6 +13,9 @@ will be skipped.
 # Add extra labels for the vote counts and age when merging
 extra_labels: false
 
+# Don't count any vote from a user who votes for multiple options
+prevent_doubles: true
+
 # Minimum number of voters
 quorum: 5
 

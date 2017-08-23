@@ -10,9 +10,9 @@ This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitCon
 
 ## Vote Totals
 
-| Yes | No | Abstain | Total |
-| --- | -- | ------- | ----- |
-| %s  | %s | %s      | %s    |
+| Yes | No | Abstain | Voters |
+| --- | -- | ------- | ------ |
+| %s  | %s | %s      | %s     |
 
 
 ## Vote Breakdown
@@ -99,10 +99,14 @@ class PullRequest:
         self.no = []
         self.abstain = []
         self.users = []
+        self.doubles = []
         for reaction in reactions:
             content = reaction['content']
             user = reaction['user']
             username = user['login']
+
+            if username in self.doubles:
+                continue
 
             if 'collaborators_only' in self.repository.rules and self.repository.rules['collaborators_only']:
                 if not isCollaborator(username):
@@ -114,6 +118,19 @@ class PullRequest:
 
             if 'whitelist' in self.repository.rules:
                 if username not in self.repository.rules['whitelist']:
+                    continue
+
+            if 'prevent_doubles' in self.repository.rules and self.repository.rules['prevent_doubles']:
+                # make sure user hasn't voted twice
+                if username in self.users:
+                    self.doubles.append(username)
+                    self.users.remove(username)
+                    if username in self.yes:
+                        self.yes.remove(username)
+                    if username in self.no:
+                        self.no.remove(username)
+                    if username in self.abstain:
+                        self.abstain.remove(username)
                     continue
 
             if content == '+1':
@@ -199,6 +216,13 @@ class PullRequest:
             consensus.hasQuorum(self),
             consensus.hasVotes(self)
         )
+
+        if len(self.doubles) > 0:
+            duplist = ["[%s](https://github.com/%s)" % (username, username) for username in self.doubles]
+            dupuserstring = ', '.join(duplist)
+            dupstring = '\n\nThe following users voted for multiple options and were exlcuded: \n%s' % (dupuserstring)
+            message = "%s\n%s" % (message, dupstring)
+
         self.addComment(message)
 
     def buildVoteTable(self):
