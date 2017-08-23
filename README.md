@@ -13,10 +13,10 @@ will be skipped.
 # Add extra labels for the vote counts and age when merging
 extra_labels: false
 
-# Minimum number of votes
+# Minimum number of voters
 quorum: 5
 
-# Required percentage of "yes" votes
+# Required percentage of "yes" votes (ignoring abstentions)
 threshold: 0.65
 
 # Only process votes by contributors
@@ -48,6 +48,10 @@ Votes are made by using reactions on the top level comment of the Pull Request.
 | ![-1](https://assets-cdn.github.com/images/icons/emoji/unicode/1f44e.png "+1")       | No      |
 | ![confused](https://assets-cdn.github.com/images/icons/emoji/unicode/1f615.png "confused") | Abstain |
 
+
+## Label Overrides
+
+Any Pull Request with a `WIP` or `DONTMERGE` label (case insensitive) will be skipped over.
 
 
 ## Commands
@@ -100,7 +104,3 @@ Merge specific pull request, including any labels and comments that normally wou
 ```shell
 gitconsensus forcemerge USERNAME REPOSITORY PR_NUMBER
 ```
-
-## Label Overrides
-
-Any Pull Request with a `WIP` or `DONTMERGE` label (case insensitive) will be skipped over.
