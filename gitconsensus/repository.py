@@ -1,4 +1,4 @@
-import gitconsensus.config
+from gitconsensus import config
 import datetime
 import github3
 import json
@@ -10,13 +10,23 @@ This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitCon
 
 ## Vote Totals
 
-| Yes | No | Total |
-| --- | -- | ----- |
-| %s  | %s | %s    |
+| Yes | No | Abstain | Total |
+| --- | -- | ------- | ----- |
+| %s  | %s | %s      | %s    |
+
 
 ## Vote Breakdown
 
 %s
+
+
+## Vote Results
+
+| Criteria   | Result |
+| ---------- | ------ |
+| Has Quorum | %s     |
+| Has Votes  | %s     |
+
 """
 
 
@@ -161,9 +171,7 @@ class PullRequest:
     def close(self):
         self.pr.close()
         self.addLabels(['gc-closed'])
-        table = self.buildVoteTable()
-        message = message_template % ('closed', str(len(self.yes)), str(len(self.no)), str(len(self.users)), table)
-        self.addComment(message)
+        self.commentAction('closed')
 
     def vote_merge(self):
         self.pr.merge('GitConsensus Merge')
@@ -176,8 +184,21 @@ class PullRequest:
             'gc-no %s' % (len(self.no),),
             'gc-age %s' % (self.daysSinceLastUpdate(),)
             ])
+        self.commentAction('merged')
+
+    def commentAction(self, action):
         table = self.buildVoteTable()
-        message = message_template % ('merged', str(len(self.yes)), str(len(self.no)), str(len(self.users)), table)
+        consensus = self.repository.getConsensus()
+        message = message_template % (
+            action,
+            str(len(self.yes)),
+            str(len(self.no)),
+            str(len(self.abstain)),
+            str(len(self.users)),
+            table,
+            consensus.hasQuorum(self),
+            consensus.hasVotes(self)
+        )
         self.addComment(message)
 
     def buildVoteTable(self):
