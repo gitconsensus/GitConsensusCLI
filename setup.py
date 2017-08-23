@@ -18,7 +18,7 @@ setup(
 
   name = 'gitconsensus',
 
-  version = '0.1.0',
+  version = '0.2.0',
   packages=find_packages(),
 
   description = 'Automate Github Pull Requests using Reactions',
