@@ -154,12 +154,12 @@ class PullRequest:
         # 2017-08-19T23:29:31Z
         commit_date = datetime.datetime.strptime(commit_date_string, '%Y-%m-%dT%H:%M:%SZ')
         now = datetime.datetime.now()
-        delta = commit_date - now
+        delta = now - commit_date
         return delta.days
 
     def daysSincePullOpened(self):
         now = datetime.datetime.now()
-        delta = self.pr.created_at.replace(tzinfo=None) - now
+        delta = now - self.pr.created_at.replace(tzinfo=None)
         return delta.days
 
     def daysSinceLastUpdate(self):
