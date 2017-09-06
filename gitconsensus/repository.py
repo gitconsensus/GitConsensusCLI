@@ -285,7 +285,7 @@ class Consensus:
             return False
         if not self.hasAged(pr):
             return False
-        return False
+        return True
 
     def isMergeable(self, pr):
         if not pr.pr.mergeable:
