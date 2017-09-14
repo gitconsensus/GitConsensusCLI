@@ -145,7 +145,7 @@ class PullRequest:
             if user['login'] not in self.users:
                 self.users.append(user['login'])
 
-    def daysSinceLastCommit(self):
+    def hoursSinceLastCommit(self):
         commits = self.pr.iter_commits()
 
         for commit in commits:
@@ -155,20 +155,20 @@ class PullRequest:
         commit_date = datetime.datetime.strptime(commit_date_string, '%Y-%m-%dT%H:%M:%SZ')
         now = datetime.datetime.now()
         delta = now - commit_date
-        return delta.days
+        return delta.seconds / 360
 
-    def daysSincePullOpened(self):
+    def hoursSincePullOpened(self):
         now = datetime.datetime.now()
         delta = now - self.pr.created_at.replace(tzinfo=None)
-        return delta.days
+        return delta.seconds / 360
 
-    def daysSinceLastUpdate(self):
-        daysOpen = self.daysSincePullOpened()
-        daysSinceCommit = self.daysSinceLastCommit()
+    def hoursSinceLastUpdate(self):
+        hoursOpen = self.hoursSincePullOpened()
+        hoursSinceCommit = self.hoursSinceLastCommit()
 
-        if daysOpen < daysSinceCommit:
-            return daysOpen
-        return daysSinceCommit
+        if hoursOpen < hoursSinceCommit:
+            return hoursOpen
+        return hoursSinceCommit
 
     def getIssue(self):
         return self.repository.repository.issue(self.number)
@@ -181,7 +181,7 @@ class PullRequest:
 
     def shouldClose(self):
         if 'timeout' in self.repository.rules:
-            if self.daysSinceLastCommit() >= self.repository.rules['timeout']:
+            if self.hoursSinceLastCommit() >= self.repository.rules['timeout']:
                 return True
         return False
 
@@ -199,7 +199,7 @@ class PullRequest:
             'gc-voters %s' % (len(self.users),),
             'gc-yes %s' % (len(self.yes),),
             'gc-no %s' % (len(self.no),),
-            'gc-age %s' % (self.daysSinceLastUpdate(),)
+            'gc-age %s' % (self.hoursSinceLastUpdate(),)
             ])
         self.commentAction('merged')
 
@@ -310,7 +310,7 @@ class Consensus:
 
     def hasAged(self, pr):
         if 'mergedelay' in self.rules:
-            days = pr.daysSinceLastUpdate()
-            if days < self.rules['mergedelay']:
+            hours = pr.hoursSinceLastUpdate()
+            if hours < self.rules['mergedelay']:
                 return False
         return True
