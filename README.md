@@ -9,6 +9,8 @@ The file `.gitconsensus.yaml` needs to be placed in the repository to be managed
 will be skipped.
 
 ```yaml
+# Which version of the consensus rules to use
+version: 2
 
 # Add extra labels for the vote counts and age when merging
 extra_labels: false
