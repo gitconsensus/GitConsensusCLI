@@ -34,11 +34,11 @@ whitelist:
   - bob
   - carol
 
-# Number of days after last action (commit or opening the pull request) before issue can be merged
-mergedelay: 3
+# Number of hours after last action (commit or opening the pull request) before issue can be merged
+mergedelay: 24
 
-# Number of days after last action (commit or opening the pull request) before issue is autoclosed
-timeout: 30
+# Number of hours after last action (commit or opening the pull request) before issue is autoclosed
+timeout: 720
 ```
 
 ## Voting
