@@ -16,12 +16,6 @@ def reloadSettings():
     if os.path.isfile(path):
         with open(path, 'r') as f:
             settings = yaml.load(f)
-            # support older versions by converting from day to hours.
-            if 'version' not in settings or settings['version'] < 2:
-                if 'mergedelay' in settings and settings['mergedelay']:
-                    settings['mergedelay'] = settings['mergedelay'] * 24
-                if 'timeout' in settings and settings['timeout']:
-                    settings['timeout'] = settings['timeout'] * 24
     return settings
 
 

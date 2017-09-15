@@ -56,6 +56,13 @@ class Repository:
         self.rules = False
         if res.status_code == 200:
             self.rules = yaml.load(res.text)
+            # support older versions by converting from day to hours.
+            if 'version' not in self.rules or self.rules['version'] < 2:
+                if 'mergedelay' in self.rules and self.rules['mergedelay']:
+                    self.rules['mergedelay'] = self.rules['mergedelay'] * 24
+                if 'timeout' in self.rules and self.rules['timeout']:
+                    self.rules['timeout'] = self.rules['timeout'] * 24
+
 
     def getPullRequests(self):
         prs = self.repository.iter_pulls(state="open")
@@ -155,12 +162,12 @@ class PullRequest:
         commit_date = datetime.datetime.strptime(commit_date_string, '%Y-%m-%dT%H:%M:%SZ')
         now = datetime.datetime.now()
         delta = now - commit_date
-        return delta.seconds / 360
+        return delta.seconds / 3600
 
     def hoursSincePullOpened(self):
         now = datetime.datetime.now()
         delta = now - self.pr.created_at.replace(tzinfo=None)
-        return delta.seconds / 360
+        return delta.seconds / 3600
 
     def hoursSinceLastUpdate(self):
         hoursOpen = self.hoursSincePullOpened()
