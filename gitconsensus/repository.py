@@ -322,6 +322,6 @@ class Consensus:
         if 'delayoverride' in self.rules and self.rules['delayoverride']:
             if len(pr.no) > 0:
                 return False
-            if len(pr.users) >= self.rules['delayoverride']:
+            if len(pr.yes) >= self.rules['delayoverride']:
                 return True
         return False
