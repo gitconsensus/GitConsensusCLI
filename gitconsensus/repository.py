@@ -314,8 +314,14 @@ class Consensus:
         return True
 
     def hasAged(self, pr):
-        if 'mergedelay' in self.rules:
-            hours = pr.hoursSinceLastUpdate()
-            if hours < self.rules['mergedelay']:
+        if 'mergedelay' not in self.rules:
+            return True
+        hours = pr.hoursSinceLastUpdate()
+        if hours >= self.rules['mergedelay']:
+            return True
+        if 'delayoverride' in self.rules and self.rules['delayoverride']:
+            if len(pr.no) > 0:
                 return False
-        return True
+            if len(pr.users) >= self.rules['delayoverride']:
+                return True
+        return False

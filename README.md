@@ -39,6 +39,9 @@ whitelist:
 # Number of hours after last action (commit or opening the pull request) before issue can be merged
 mergedelay: 24
 
+# Number of votes at which the mergedelay gets ignored, assuming no negative votes.
+delayoverride: 10
+
 # Number of hours after last action (commit or opening the pull request) before issue is autoclosed
 timeout: 720
 ```
