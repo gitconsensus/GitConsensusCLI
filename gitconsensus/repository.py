@@ -142,14 +142,12 @@ class PullRequest:
 
             if content == '+1':
                 self.yes.append(user['login'])
+                self.users.append(user['login'])
             elif content == '-1':
                 self.no.append(user['login'])
+                self.users.append(user['login'])
             elif content == 'confused':
                 self.abstain.append(user['login'])
-            else:
-                continue
-
-            if user['login'] not in self.users:
                 self.users.append(user['login'])
 
     def hoursSinceLastCommit(self):
