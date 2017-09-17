@@ -105,5 +105,24 @@ def close(username, repository_name):
             request.addInfoLabels()
             request.close()
 
+
+@cli.command(short_help="Add labels and set colors")
+@click.argument('username')
+@click.argument('repository_name')
+@click.option('--color-negative', default='#ee0701')
+@click.option('--color-positive', default='#0052cc')
+@click.option('--color-notice', default='#fbf904')
+def createlabels(username, repository_name, color_negative, color_positive, color_notice):
+    repo = Repository(username, repository_name)
+    repo.setLabelColor('License Change', color_notice)
+    repo.setLabelColor('Consensus Change', color_notice)
+    repo.setLabelColor('Has Quorum', color_positive)
+    repo.setLabelColor('Needs Votes', color_negative)
+    repo.setLabelColor('Passing', color_positive)
+    repo.setLabelColor('Failing', color_negative)
+    repo.setLabelColor('gc-merged', color_positive)
+    repo.setLabelColor('gc-closed', color_negative)
+
+
 if __name__ == '__main__':
     cli()

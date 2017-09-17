@@ -89,6 +89,12 @@ class Repository:
     def getConsensus(self):
         return Consensus(self.rules)
 
+    def setLabelColor(self, name, color):
+        try:
+            self.repository.create_label(name, color)
+        except:
+            self.repository.update_label(name, color)
+
 
 class PullRequest:
     labels = False
