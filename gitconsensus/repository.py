@@ -78,7 +78,7 @@ class Repository:
     def isContributor(self, username):
         if not self.contributors:
             contributor_list = self.repository.iter_contributors()
-            self.contributors = [contributor['login'] for contributor in contributor_list]
+            self.contributors = [str(contributor) for contributor in contributor_list]
         return username in self.contributors
 
     def isCollaborator(username):
@@ -94,6 +94,7 @@ class PullRequest:
     labels = False
     def __init__(self, repository, number):
         self.repository = repository
+        self.consensus = repository.getConsensus()
         self.number = number
         self.pr = self.repository.client.pull_request(self.repository.user, self.repository.name, number)
 
@@ -105,6 +106,11 @@ class PullRequest:
         self.yes = []
         self.no = []
         self.abstain = []
+
+        self.contributors_yes = []
+        self.contributors_no = []
+        self.contributors_abstain = []
+
         self.users = []
         self.doubles = []
         for reaction in reactions:
@@ -114,6 +120,10 @@ class PullRequest:
 
             if username in self.doubles:
                 continue
+
+            if 'blacklist' in self.repository.rules and self.repository.rules['blacklist']:
+                if username in self.repository.blacklist:
+                    continue
 
             if 'collaborators_only' in self.repository.rules and self.repository.rules['collaborators_only']:
                 if not isCollaborator(username):
@@ -138,17 +148,38 @@ class PullRequest:
                         self.no.remove(username)
                     if username in self.abstain:
                         self.abstain.remove(username)
+                    if username in self.contributors_yes:
+                        self.contributors_yes.remove(username)
+                    if username in self.contributors_no:
+                        self.contributors_no.remove(username)
+                    if username in self.contributors_abstain:
+                        self.contributors_abstain.remove(username)
                     continue
 
             if content == '+1':
+                self.users.append(user['login'])
                 self.yes.append(user['login'])
-                self.users.append(user['login'])
+                if self.repository.isContributor(user['login']):
+                    self.contributors_yes.append(user['login'])
             elif content == '-1':
+                self.users.append(user['login'])
                 self.no.append(user['login'])
-                self.users.append(user['login'])
+                if seld.repository.isContributor(user['login']):
+                    self.contributors_no.append(user['login'])
             elif content == 'confused':
-                self.abstain.append(user['login'])
                 self.users.append(user['login'])
+                self.abstain.append(user['login'])
+                if seld.repository.isContributor(user['login']):
+                    self.contributors_abstain.append(user['login'])
+
+        files = self.pr.iter_files()
+        self.changes_consensus = False
+        self.changes_license = False
+        for changed_file in files:
+            if changed_file.filename == '.gitconsensus.yaml':
+                self.changes_consensus = True
+            if changed_file.filename.lower().startswith('license'):
+                self.changes_license = True
 
     def hoursSinceLastCommit(self):
         commits = self.pr.iter_commits()
@@ -175,14 +206,19 @@ class PullRequest:
             return hoursOpen
         return hoursSinceCommit
 
+    def changesConsensus(self):
+        return self.changes_consensus
+
+    def changesLicense(self):
+        return self.changes_license
+
     def getIssue(self):
         return self.repository.repository.issue(self.number)
 
     def validate(self):
         if self.repository.rules == False:
             return False
-        consenttest = self.repository.getConsensus()
-        return consenttest.validate(self)
+        return self.consensus.validate(self)
 
     def shouldClose(self):
         if 'timeout' in self.repository.rules:
@@ -193,11 +229,13 @@ class PullRequest:
     def close(self):
         self.pr.close()
         self.addLabels(['gc-closed'])
+        self.cleanInfoLabels()
         self.commentAction('closed')
 
     def vote_merge(self):
         self.pr.merge('GitConsensus Merge')
         self.addLabels(['gc-merged'])
+        self.cleanInfoLabels()
 
         if 'extra_labels' in self.repository.rules and self.repository.rules['extra_labels']:
             self.addLabels([
@@ -208,9 +246,44 @@ class PullRequest:
             ])
         self.commentAction('merged')
 
+    def addInfoLabels(self):
+        labels = self.getLabelList()
+
+        licenseMessage = 'License Change'
+        if self.changesLicense():
+            self.addLabels([licenseMessage])
+        else:
+            self.removeLabels([licenseMessage])
+
+        consensusMessage = 'Consensus Change'
+        if self.changesConsensus():
+            self.addLabels([consensusMessage])
+        else:
+            self.removeLabels([consensusMessage])
+
+        hasQuorumMessage = 'Has Quorum'
+        needsQuorumMessage = 'Needs Votes'
+        if self.consensus.hasQuorum(self):
+            self.addLabels([hasQuorumMessage])
+            self.removeLabels([needsQuorumMessage])
+        else:
+            self.removeLabels([hasQuorumMessage])
+            self.addLabels([needsQuorumMessage])
+
+        passingMessage = 'Passing'
+        failingMessage = 'Failing'
+        if self.consensus.hasVotes(self):
+            self.addLabels([passingMessage])
+            self.removeLabels([failingMessage])
+        else:
+            self.removeLabels([passingMessage])
+            self.addLabels([failingMessage])
+
+    def cleanInfoLabels(self):
+        self.removeLabels(['Failing', 'Passing', 'Needs Votes', 'Has Quorum'])
+
     def commentAction(self, action):
         table = self.buildVoteTable()
-        consensus = self.repository.getConsensus()
         message = message_template % (
             action,
             str(len(self.yes)),
@@ -218,8 +291,8 @@ class PullRequest:
             str(len(self.abstain)),
             str(len(self.users)),
             table,
-            consensus.hasQuorum(self),
-            consensus.hasVotes(self)
+            self.consensus.hasQuorum(self),
+            self.consensus.hasVotes(self)
         )
 
         if len(self.doubles) > 0:
@@ -251,11 +324,19 @@ class PullRequest:
             table = "%s\n%s" % (table, row)
         return table
 
-
     def addLabels(self, labels):
+        existing = self.getLabelList()
         issue = self.getIssue()
         for label in labels:
-            issue.add_labels(label)
+            if label not in existing:
+                issue.add_labels(label)
+
+    def removeLabels(self, labels):
+        existing = self.getLabelList()
+        issue = self.getIssue()
+        for label in labels:
+            if label in existing:
+                issue.remove_label(label)
 
     def addComment(self, comment_string):
         return self.getIssue().create_comment(comment_string)
@@ -320,8 +401,13 @@ class Consensus:
         if hours >= self.rules['mergedelay']:
             return True
         if 'delayoverride' in self.rules and self.rules['delayoverride']:
+            if pr.changesConsensus() or pr.changesLicense():
+                return False
+            if 'mergedelaymin' in self.rules and self.rules['mergedelaymin']:
+                if hours < self.rules['mergedelaymin']:
+                    return False
             if len(pr.no) > 0:
                 return False
-            if len(pr.yes) >= self.rules['delayoverride']:
+            if len(pr.contributors_yes) >= self.rules['delayoverride']:
                 return True
         return False
