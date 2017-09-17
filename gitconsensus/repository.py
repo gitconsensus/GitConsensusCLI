@@ -164,12 +164,12 @@ class PullRequest:
             elif content == '-1':
                 self.users.append(user['login'])
                 self.no.append(user['login'])
-                if seld.repository.isContributor(user['login']):
+                if self.repository.isContributor(user['login']):
                     self.contributors_no.append(user['login'])
             elif content == 'confused':
                 self.users.append(user['login'])
                 self.abstain.append(user['login'])
-                if seld.repository.isContributor(user['login']):
+                if self.repository.isContributor(user['login']):
                     self.contributors_abstain.append(user['login'])
 
         files = self.pr.iter_files()
