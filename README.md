@@ -33,14 +33,21 @@ collaborators_only: false
 # When defined only process votes from these github users
 whitelist:
   - alice
-  - bob
   - carol
+
+# When defined votes from these users will be ignored
+blacklist:
+  - bob
+  - dan
 
 # Number of hours after last action (commit or opening the pull request) before issue can be merged
 mergedelay: 24
 
-# Number of votes at which the mergedelay gets ignored, assuming no negative votes.
+# Number of votes from contributors at which the mergedelay gets ignored, assuming no negative votes.
 delayoverride: 10
+
+# When `delayoverride` is set this value is the minimum hours without changes before the PR will be merged
+mergedelaymin: 1
 
 # Number of hours after last action (commit or opening the pull request) before issue is autoclosed
 timeout: 720

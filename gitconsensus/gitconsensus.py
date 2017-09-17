@@ -85,6 +85,7 @@ def merge(username, repository_name):
     repo = Repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
+        request.addInfoLabels()
         if request.validate():
             click.echo("Merging PR#%s" % (request.number,))
             request.vote_merge()
@@ -101,6 +102,7 @@ def close(username, repository_name):
             continue
         if request.shouldClose():
             click.echo("Closing PR#%s" % (request.number,))
+            request.addInfoLabels()
             request.close()
 
 if __name__ == '__main__':
