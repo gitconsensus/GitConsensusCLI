@@ -145,22 +145,23 @@ class PullRequest:
 
             if 'prevent_doubles' in self.repository.rules and self.repository.rules['prevent_doubles']:
                 # make sure user hasn't voted twice
-                if username in self.users:
-                    self.doubles.append(username)
-                    self.users.remove(username)
-                    if username in self.yes:
-                        self.yes.remove(username)
-                    if username in self.no:
-                        self.no.remove(username)
-                    if username in self.abstain:
-                        self.abstain.remove(username)
-                    if username in self.contributors_yes:
-                        self.contributors_yes.remove(username)
-                    if username in self.contributors_no:
-                        self.contributors_no.remove(username)
-                    if username in self.contributors_abstain:
-                        self.contributors_abstain.remove(username)
-                    continue
+                if content == '+1' or content == '-1' or content == 'confused':
+                    if username in self.users:
+                        self.doubles.append(username)
+                        self.users.remove(username)
+                        if username in self.yes:
+                            self.yes.remove(username)
+                        if username in self.no:
+                            self.no.remove(username)
+                        if username in self.abstain:
+                            self.abstain.remove(username)
+                        if username in self.contributors_yes:
+                            self.contributors_yes.remove(username)
+                        if username in self.contributors_no:
+                            self.contributors_no.remove(username)
+                        if username in self.contributors_abstain:
+                            self.contributors_abstain.remove(username)
+                        continue
 
             if content == '+1':
                 self.users.append(user['login'])
