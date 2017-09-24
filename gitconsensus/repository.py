@@ -198,12 +198,12 @@ class PullRequest:
         commit_date = datetime.datetime.strptime(commit_date_string, '%Y-%m-%dT%H:%M:%SZ')
         now = datetime.datetime.utcnow()
         delta = now - commit_date
-        return delta.seconds / 3600
+        return delta.total_seconds() / 3600
 
     def hoursSincePullOpened(self):
         now = datetime.datetime.utcnow()
         delta = now - self.pr.created_at.replace(tzinfo=None)
-        return delta.seconds / 3600
+        return delta.total_seconds() / 3600
 
     def hoursSinceLastUpdate(self):
         hoursOpen = self.hoursSincePullOpened()
