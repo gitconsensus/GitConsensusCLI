@@ -49,11 +49,13 @@ def info(username, repository_name, pull_request):
     request = repo.getPullRequest(pull_request)
     click.echo("PR#%s: %s" % (request.number, request.pr.title))
     consensus = repo.getConsensus()
-    click.echo("Mergeable:  %s" % (consensus.isMergeable(request),))
-    click.echo("Is Blocked: %s" % (request.isBlocked(),))
-    click.echo("Has Quorum: %s" % (consensus.hasQuorum(request),))
-    click.echo("Has Votes:  %s" % (consensus.hasVotes(request),))
-    click.echo("Has Aged:   %s" % (consensus.hasAged(request),))
+    click.echo("Mergeable:    %s" % (consensus.isMergeable(request),))
+    click.echo("Is Blocked:   %s" % (request.isBlocked(),))
+    click.echo("Has Quorum:   %s" % (consensus.hasQuorum(request),))
+    click.echo("Has Votes:    %s" % (consensus.hasVotes(request),))
+    click.echo("Has Aged:     %s" % (consensus.hasAged(request),))
+    click.echo("Should Close: %s" % (request.shouldClose(),))
+    click.echo("Last Update:  %s" % (request.hoursSinceLastUpdate(),))
 
 
 @cli.command(short_help="Forced a specific pull request to be merged")
