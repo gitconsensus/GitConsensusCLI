@@ -228,7 +228,7 @@ class PullRequest:
 
     def shouldClose(self):
         if 'timeout' in self.repository.rules:
-            if self.hoursSinceLastCommit() >= self.repository.rules['timeout']:
+            if self.hoursSinceLastUpdate() >= self.repository.rules['timeout']:
                 return True
         return False
 
