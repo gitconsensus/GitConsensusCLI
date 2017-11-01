@@ -87,10 +87,11 @@ def merge(username, repository_name):
     repo = Repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
-        request.addInfoLabels()
         if request.validate():
             click.echo("Merging PR#%s" % (request.number,))
             request.vote_merge()
+        else:
+            request.addInfoLabels()
 
 
 @cli.command(short_help="Close older unmerged opened pull requests")
