@@ -56,10 +56,10 @@ licensedelay: 72
 consensusdelay: 72
 
 # Do not allow license changes to be merged.
-licenselock: true
+lockconsensus: true
 
 # Do not allow consensus changes to be merged.
-consensuslock: true
+lockconsensus: true
 
 # Number of hours after last action (commit or opening the pull request) before issue is autoclosed
 timeout: 720
