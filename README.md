@@ -49,6 +49,18 @@ delayoverride: 10
 # When `delayoverride` is set this value is the minimum hours without changes before the PR will be merged
 mergedelaymin: 1
 
+# Require this amount of time in hours before a PR with a license change will be merged.
+licensedelay: 72
+
+# Require this amount of time in hours before a PR with a consensus change will be merged.
+consensusdelay: 72
+
+# Do not allow license changes to be merged.
+licenselock: true
+
+# Do not allow consensus changes to be merged.
+consensuslock: true
+
 # Number of hours after last action (commit or opening the pull request) before issue is autoclosed
 timeout: 720
 ```

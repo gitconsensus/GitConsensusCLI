@@ -51,6 +51,7 @@ def info(username, repository_name, pull_request):
     consensus = repo.getConsensus()
     click.echo("Mergeable:    %s" % (consensus.isMergeable(request),))
     click.echo("Is Blocked:   %s" % (request.isBlocked(),))
+    click.echo("Is Allowed:   %s" % (consensus.isAllowed(request),))
     click.echo("Has Quorum:   %s" % (consensus.hasQuorum(request),))
     click.echo("Has Votes:    %s" % (consensus.hasVotes(request),))
     click.echo("Has Aged:     %s" % (consensus.hasAged(request),))

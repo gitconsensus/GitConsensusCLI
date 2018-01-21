@@ -369,6 +369,8 @@ class Consensus:
     def validate(self, pr):
         if pr.isBlocked():
             return False
+        if not self.isAllowed(pr):
+            return False
         if not self.isMergeable(pr):
             return False
         if not self.hasQuorum(pr):
@@ -377,6 +379,15 @@ class Consensus:
             return False
         if not self.hasAged(pr):
             return False
+        return True
+
+    def isAllowed(self, pr):
+        if pr.changesLicense():
+            if 'locklicense' in self.rules and self.rules['locklicense']:
+                return False
+        if pr.changesConsensus():
+            if 'lockconsensus' in self.rules and self.rules['lockconsensus']:
+                return False
         return True
 
     def isMergeable(self, pr):
@@ -401,9 +412,17 @@ class Consensus:
         return True
 
     def hasAged(self, pr):
+        hours = pr.hoursSinceLastUpdate()
+        if pr.changesLicense():
+            if 'licensedelay' in self.rules and self.rules['licensedelay']:
+                if hours < self.rules['licensedelay']:
+                    return False
+        if pr.changesConsensus():
+            if 'consensusdelay' in self.rules and self.rules['consensusdelay']:
+                if hours < self.rules['consensusdelay']:
+                    return False
         if 'mergedelay' not in self.rules:
             return True
-        hours = pr.hoursSinceLastUpdate()
         if hours >= self.rules['mergedelay']:
             return True
         if 'delayoverride' in self.rules and self.rules['delayoverride']:
