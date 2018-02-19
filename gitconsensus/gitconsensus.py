@@ -131,7 +131,9 @@ def createlabels(username, repository_name, color_negative, color_positive, colo
 
 def get_repository(username, repository_name):
     credentials = config.getGitToken()
-    return Repository(username, repository_name, credentials['token'])
+    client = github3.login(token=credentials['token'])
+    return Repository(username, repository_name, client)
+
 
 if __name__ == '__main__':
     cli()

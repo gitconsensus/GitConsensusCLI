@@ -31,28 +31,23 @@ This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitCon
 consensus_url_template = "https://raw.githubusercontent.com/%s/%s/master/.gitconsensus.yaml"
 
 
-def githubApiRequest(url, token):
-    headers = {
-        'Accept': 'application/vnd.github.squirrel-girl-preview',
-        'user-agent': 'gitconsensus',
-        'Authorization': "token %s" % (token,)
-    }
-    return requests.get(url, headers=headers)
+def githubApiRequest(url, client):
+    headers = {'Accept': 'application/vnd.github.squirrel-girl-preview'}
+    return client._get(url, headers=headers)
 
 
 class Repository:
 
-    def __init__(self, user, repository, token=False):
+    def __init__(self, user, repository, client):
         self.user = user
         self.name = repository
         self.contributors = False
         self.collaborators = {}
-        self.token = token
-        self.client = github3.login(token=token)
+        self.client = client
         self.client.set_user_agent('gitconsensus')
         self.repository = self.client.repository(self.user, self.name)
         consensusurl = consensus_url_template % (self.user, self.name)
-        res = githubApiRequest(consensusurl, self.token)
+        res = githubApiRequest(consensusurl, self.client)
         self.rules = False
         if res.status_code == 200:
             self.rules = yaml.load(res.text)
@@ -106,7 +101,7 @@ class PullRequest:
 
         # https://api.github.com/repos/OWNER/REPO/issues/1/reactions
         reacturl = "https://api.github.com/repos/%s/%s/issues/%s/reactions" % (self.repository.user, self.repository.name, self.number)
-        res = githubApiRequest(reacturl, self.repository.token)
+        res = githubApiRequest(reacturl, self.repository.client)
         reactions = json.loads(res.text)
 
         self.yes = []
