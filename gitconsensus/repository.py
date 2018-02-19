@@ -1,4 +1,3 @@
-from gitconsensus import config
 import datetime
 import github3
 import json
@@ -29,30 +28,31 @@ This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitCon
 
 """
 
+consensus_url_template = "https://raw.githubusercontent.com/%s/%s/master/.gitconsensus.yaml"
 
-def githubApiRequest(url):
-    auth = config.getGitToken()
+
+def githubApiRequest(url, token):
     headers = {
         'Accept': 'application/vnd.github.squirrel-girl-preview',
         'user-agent': 'gitconsensus',
-        'Authorization': "token %s" % (auth['token'],)
+        'Authorization': "token %s" % (token,)
     }
     return requests.get(url, headers=headers)
 
 
 class Repository:
 
-    def __init__(self, user, repository):
+    def __init__(self, user, repository, token=False):
         self.user = user
         self.name = repository
         self.contributors = False
         self.collaborators = {}
-        auth = config.getGitToken()
-        self.client = github3.login(token=auth['token'])
+        self.token = token
+        self.client = github3.login(token=token)
         self.client.set_user_agent('gitconsensus')
         self.repository = self.client.repository(self.user, self.name)
-        consensusurl = "https://raw.githubusercontent.com/%s/%s/master/.gitconsensus.yaml" % (self.user, self.name)
-        res = githubApiRequest(consensusurl)
+        consensusurl = consensus_url_template % (self.user, self.name)
+        res = githubApiRequest(consensusurl, self.token)
         self.rules = False
         if res.status_code == 200:
             self.rules = yaml.load(res.text)
@@ -81,7 +81,7 @@ class Repository:
             self.contributors = [str(contributor) for contributor in contributor_list]
         return username in self.contributors
 
-    def isCollaborator(username):
+    def isCollaborator(self, username):
         if username not in self.collaborators:
             self.collaborators[username] = self.repository.is_collaborator(username)
         return self.repository.is_collaborator(username)
@@ -106,7 +106,7 @@ class PullRequest:
 
         # https://api.github.com/repos/OWNER/REPO/issues/1/reactions
         reacturl = "https://api.github.com/repos/%s/%s/issues/%s/reactions" % (self.repository.user, self.repository.name, self.number)
-        res = githubApiRequest(reacturl)
+        res = githubApiRequest(reacturl, self.repository.token)
         reactions = json.loads(res.text)
 
         self.yes = []

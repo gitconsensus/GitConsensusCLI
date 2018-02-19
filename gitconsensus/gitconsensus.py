@@ -2,6 +2,7 @@ import click
 import github3
 import os
 import random
+from gitconsensus import config
 from gitconsensus.repository import Repository
 import string
 
@@ -34,7 +35,7 @@ def auth():
 @click.argument('username')
 @click.argument('repository_name')
 def list(username, repository_name):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
         click.echo("PR#%s: %s" % (request.number, request.validate()))
@@ -45,7 +46,7 @@ def list(username, repository_name):
 @click.argument('repository_name')
 @click.argument('pull_request')
 def info(username, repository_name, pull_request):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     request = repo.getPullRequest(pull_request)
     click.echo("PR#%s: %s" % (request.number, request.pr.title))
     consensus = repo.getConsensus()
@@ -64,7 +65,7 @@ def info(username, repository_name, pull_request):
 @click.argument('repository_name')
 @click.argument('pull_request')
 def forcemerge(username, repository_name, pull_request):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     request = repo.getPullRequest(pull_request)
     click.echo("PR#%s: %s" % (request.number, request.pr.title))
     request.vote_merge()
@@ -75,7 +76,7 @@ def forcemerge(username, repository_name, pull_request):
 @click.argument('repository_name')
 @click.argument('pull_request')
 def forceclose(username, repository_name, pull_request):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     request = repo.getPullRequest(pull_request)
     click.echo("PR#%s: %s" % (request.number, request.pr.title))
     request.close()
@@ -85,7 +86,7 @@ def forceclose(username, repository_name, pull_request):
 @click.argument('username')
 @click.argument('repository_name')
 def merge(username, repository_name):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
         if request.validate():
@@ -99,7 +100,7 @@ def merge(username, repository_name):
 @click.argument('username')
 @click.argument('repository_name')
 def close(username, repository_name):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     requests = repo.getPullRequests()
     for request in requests:
         if request.isBlocked():
@@ -117,7 +118,7 @@ def close(username, repository_name):
 @click.option('--color-positive', default='#0052cc')
 @click.option('--color-notice', default='#fbf904')
 def createlabels(username, repository_name, color_negative, color_positive, color_notice):
-    repo = Repository(username, repository_name)
+    repo = get_repository(username, repository_name)
     repo.setLabelColor('License Change', color_notice)
     repo.setLabelColor('Consensus Change', color_notice)
     repo.setLabelColor('Has Quorum', color_positive)
@@ -127,6 +128,10 @@ def createlabels(username, repository_name, color_negative, color_positive, colo
     repo.setLabelColor('gc-merged', color_positive)
     repo.setLabelColor('gc-closed', color_negative)
 
+
+def get_repository(username, repository_name):
+    credentials = config.getGitToken()
+    return Repository(username, repository_name, credentials['token'])
 
 if __name__ == '__main__':
     cli()
