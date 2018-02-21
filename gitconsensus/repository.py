@@ -1,3 +1,4 @@
+import base64
 import datetime
 import github3
 import json
@@ -28,7 +29,7 @@ This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitCon
 
 """
 
-consensus_url_template = "https://raw.githubusercontent.com/%s/%s/master/.gitconsensus.yaml"
+consensus_url_template = "https://api.github.com/repos/%s/%s/contents/.gitconsensus.yaml"
 
 
 def githubApiRequest(url, client):
@@ -50,7 +51,8 @@ class Repository:
         res = githubApiRequest(consensusurl, self.client)
         self.rules = False
         if res.status_code == 200:
-            self.rules = yaml.load(res.text)
+            ruleresults = res.json()
+            self.rules = yaml.load(base64.b64decode(ruleresults['content']).decode('utf-8'))
             # support older versions by converting from day to hours.
             if 'version' not in self.rules or self.rules['version'] < 2:
                 if 'mergedelay' in self.rules and self.rules['mergedelay']:
