@@ -79,7 +79,6 @@ class Repository:
                     "consensus_lock": self.rules.get('lockconsensus', False),
                     "timeout": self.rules.get('timeout')
                 }
-        print(self.rules)
 
     def getPullRequests(self):
         prs = self.repository.iter_pulls(state="open")
