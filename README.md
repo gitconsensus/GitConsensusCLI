@@ -8,6 +8,8 @@ merge (or close) pull requests.
 The file `.gitconsensus.yaml` needs to be placed in the repository to be managed. Any rule set to `false` or ommitted
 will be skipped.
 
+You can run `gitconsensus init` to start with a template configuration in the current working directory.
+
 ```yaml
 # Which version of the consensus rules to use
 version: 3
@@ -94,6 +96,15 @@ gitconsensus auth
 
 You will be asked for your username, password, and 2fa token (if configured). This will be used to get an authentication
 token from Github that will be used in place of your username and password (which are never saved).
+
+### Initialization
+
+Initialize the configuration for a specific project. If no template is provided the `recommended` settings will be used.
+All settings come from the [gitconsensus_examples](https://github.com/gitconsensus/gitconsensus_examples) project.
+
+```shell
+gitconsensus init [TEMPLATE]
+```
 
 ### Merge
 

@@ -2,6 +2,7 @@ import click
 import github3
 import os
 import random
+import requests
 from gitconsensus import config
 from gitconsensus.repository import Repository
 import string
@@ -29,6 +30,28 @@ def auth():
     with open("%s/%s" % (os.getcwd(), '/.gitcredentials'), 'w') as fd:
         fd.write(str(auth.id) + '\n')
         fd.write(auth.token + '\n')
+
+
+@cli.command(short_help="Create a new gitconsensus configuration")
+@click.argument('template', required=False)
+def init(template):
+    if not template:
+        template = 'recommended'
+
+    if os.path.isfile('.gitconsensus.yaml'):
+        click.echo('.gitconsensus.yaml already exists.')
+        exit(-1)
+
+    baseurl = 'https://raw.githubusercontent.com/gitconsensus/gitconsensus_examples/master/examples/%s/.gitconsensus.yaml'
+    url = baseurl % (template)
+    response = requests.get(url)
+
+    if not response.ok:
+        click.echo('Unable to find template "%s"' % (template))
+        exit(-1)
+
+    with open('.gitconsensus.yaml', 'wb') as f:
+        f.write(response.content)
 
 
 @cli.command(short_help="List open pull requests and their status")
