@@ -7,20 +7,11 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 all: dependencies
 
 clean:
-	rm -rf $(ROOT_DIR)/*.pyc
-	# Remove existing environment
-	if [ -d $(ROOT_DIR)/env ]; then \
-		rm -rf $(ROOT_DIR)/env; \
-	fi;
-	if [ -d $(ROOT_DIR)/dist ]; then \
-		rm -rf $(ROOT_DIR)/dist; \
-	fi;
-	if [ -d $(ROOT_DIR)/build ]; then \
-		rm -rf $(ROOT_DIR)/build; \
-	fi;
-	if [ -d $(ROOT_DIR)/gitconsensus.egg-info ]; then \
-		rm -rf $(ROOT_DIR)/gitconsensus.egg-info; \
-	fi;
+	rm -rf $(ROOT_DIR)/gitconsensus/*.pyc
+	rm -rf $(ROOT_DIR)/env
+	rm -rf $(ROOT_DIR)/dist
+	rm -rf $(ROOT_DIR)/build
+	rm -rf $(ROOT_DIR)/*.egg-info
 
 dependencies:
 	if [ ! -d $(ROOT_DIR)/env ]; then python3 -m venv $(ROOT_DIR)/env; fi
