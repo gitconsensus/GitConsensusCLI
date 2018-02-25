@@ -59,7 +59,27 @@ class Repository:
                     self.rules['mergedelay'] = self.rules['mergedelay'] * 24
                 if 'timeout' in self.rules and self.rules['timeout']:
                     self.rules['timeout'] = self.rules['timeout'] * 24
+                self.rules['version'] = 2
 
+            if self.rules['version'] < 3:
+                self.rules['version'] = 3
+                self.rules['pull_requests'] = {
+                    "quorum": self.rules.get('quorum', False),
+                    "threshold": self.rules.get('threshold', False),
+                    "contributors_only": self.rules.get('contributorsonly', False),
+                    "collaborators_only": self.rules.get('collaboratorsonly', False),
+                    "whitelist": self.rules.get('whitelist'),
+                    "blacklist": self.rules.get('blacklist'),
+                    "merge_delay": self.rules.get('mergedelay', False),
+                    "delay_override": self.rules.get('delayoverride', False),
+                    "merge_delay_min": self.rules.get('mergedelaymin', False),
+                    "license_delay": self.rules.get('licenseddelay', False),
+                    "license_lock": self.rules.get('locklicense', False),
+                    "consensus_delay": self.rules.get('consensusdelay', False),
+                    "consensus_lock": self.rules.get('lockconsensus', False),
+                    "timeout": self.rules.get('timeout')
+                }
+        print(self.rules)
 
     def getPullRequests(self):
         prs = self.repository.iter_pulls(state="open")
@@ -380,10 +400,10 @@ class Consensus:
 
     def isAllowed(self, pr):
         if pr.changesLicense():
-            if 'locklicense' in self.rules and self.rules['locklicense']:
+            if 'license_lock' in self.rules['pull_requests'] and self.rules['pull_requests']['license_lock']:
                 return False
         if pr.changesConsensus():
-            if 'lockconsensus' in self.rules and self.rules['lockconsensus']:
+            if 'consensus_lock' in self.rules['pull_requests'] and self.rules['pull_requests']['consensus_lock']:
                 return False
         return True
 
@@ -393,43 +413,43 @@ class Consensus:
         return True
 
     def hasQuorum(self, pr):
-        if 'quorum' in self.rules:
-            if len(pr.users) < self.rules['quorum']:
+        if 'quorum' in self.rules['pull_requests']:
+            if len(pr.users) < self.rules['pull_requests']['quorum']:
                 return False
         return True
 
     def hasVotes(self, pr):
-        if 'threshold' in self.rules:
+        if 'threshold' in self.rules['pull_requests']:
             total = (len(pr.yes) + len(pr.no))
             if total <= 0:
                 return False
             ratio = len(pr.yes) / total
-            if ratio < self.rules['threshold']:
+            if ratio < self.rules['pull_requests']['threshold']:
                 return False
         return True
 
     def hasAged(self, pr):
         hours = pr.hoursSinceLastUpdate()
         if pr.changesLicense():
-            if 'licensedelay' in self.rules and self.rules['licensedelay']:
-                if hours < self.rules['licensedelay']:
+            if 'license_delay' in self.rules['pull_requests'] and self.rules['pull_requests']['license_delay']:
+                if hours < self.rules['pull_requests']['license_delay']:
                     return False
         if pr.changesConsensus():
-            if 'consensusdelay' in self.rules and self.rules['consensusdelay']:
-                if hours < self.rules['consensusdelay']:
+            if 'consensus_delay' in self.rules['pull_requests'] and self.rules['pull_requests']['consensus_delay']:
+                if hours < self.rules['pull_requests']['consensus_delay']:
                     return False
-        if 'mergedelay' not in self.rules:
+        if 'merge_delay' not in self.rules['pull_requests'] or not self.rules['pull_requests']['merge_delay']:
             return True
-        if hours >= self.rules['mergedelay']:
+        if hours >= self.rules['pull_requests']['merge_delay']:
             return True
-        if 'delayoverride' in self.rules and self.rules['delayoverride']:
+        if 'delay_override' in self.rules['pull_requests'] and self.rules['pull_requests']['delay_override']:
             if pr.changesConsensus() or pr.changesLicense():
                 return False
-            if 'mergedelaymin' in self.rules and self.rules['mergedelaymin']:
-                if hours < self.rules['mergedelaymin']:
+            if 'merge_delay_min' in self.rules['pull_requests'] and self.rules['pull_requests']['merge_delay_min']:
+                if hours < self.rules['pull_requests']['merge_delay_min']:
                     return False
             if len(pr.no) > 0:
                 return False
-            if len(pr.contributors_yes) >= self.rules['delayoverride']:
+            if len(pr.contributors_yes) >= self.rules['pull_requests']['delay_override']:
                 return True
         return False

@@ -10,7 +10,7 @@ will be skipped.
 
 ```yaml
 # Which version of the consensus rules to use
-version: 2
+version: 3
 
 # Add extra labels for the vote counts and age when merging
 extra_labels: false
@@ -18,51 +18,54 @@ extra_labels: false
 # Don't count any vote from a user who votes for multiple options
 prevent_doubles: true
 
-# Minimum number of voters
-quorum: 5
+# The following only applies to pull requests
+pull_requests:
 
-# Required percentage of "yes" votes (ignoring abstentions)
-threshold: 0.65
+  # Minimum number of voters
+  quorum: 5
 
-# Only process votes by contributors
-contributors_only: false
+  # Required percentage of "yes" votes (ignoring abstentions)
+  threshold: 0.65
 
-# Only process votes by collaborators
-collaborators_only: false
+  # Only process votes by contributors
+  contributors_only: false
 
-# When defined only process votes from these github users
-whitelist:
-  - alice
-  - carol
+  # Only process votes by collaborators
+  collaborators_only: false
 
-# When defined votes from these users will be ignored
-blacklist:
-  - bob
-  - dan
+  # When defined only process votes from these github users
+  whitelist:
+    - alice
+    - carol
 
-# Number of hours after last action (commit or opening the pull request) before issue can be merged
-mergedelay: 24
+  # When defined votes from these users will be ignored
+  blacklist:
+    - bob
+    - dan
 
-# Number of votes from contributors at which the mergedelay gets ignored, assuming no negative votes.
-delayoverride: 10
+  # Number of hours after last action (commit or opening the pull request) before issue can be merged
+  merge_delay: 24
 
-# When `delayoverride` is set this value is the minimum hours without changes before the PR will be merged
-mergedelaymin: 1
+  # Number of votes from contributors at which the mergedelay gets ignored, assuming no negative votes.
+  delay_override: 10
 
-# Require this amount of time in hours before a PR with a license change will be merged.
-licensedelay: 72
+  # When `delayoverride` is set this value is the minimum hours without changes before the PR will be merged
+  merge_delay_min: 1
 
-# Require this amount of time in hours before a PR with a consensus change will be merged.
-consensusdelay: 72
+  # Require this amount of time in hours before a PR with a license change will be merged.
+  licensed_delay: 72
 
-# Do not allow license changes to be merged.
-locklicense: true
+  # Require this amount of time in hours before a PR with a consensus change will be merged.
+  consensus_delay: 72
 
-# Do not allow consensus changes to be merged.
-lockconsensus: true
+  # Do not allow license changes to be merged.
+  license_lock: true
 
-# Number of hours after last action (commit or opening the pull request) before issue is autoclosed
-timeout: 720
+  # Do not allow consensus changes to be merged.
+  consensus_lock: true
+
+  # Number of hours after last action (commit or opening the pull request) before issue is autoclosed
+  timeout: 720
 ```
 
 ## Voting
