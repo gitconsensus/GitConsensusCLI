@@ -27,8 +27,8 @@ setup(
 
   author = 'Robert Hafner',
   author_email = 'tedivm@tedivm.com',
-  url = 'https://github.com/tedivm/gitconsensus',
-  download_url = "https://github.com/tedivm/gitconsensus/archive/v%s.tar.gz" % (version),
+  url = 'https://github.com/gitconsensus/gitconsensuscli',
+  download_url = "https://github.com/gitconsensus/gitconsensuscli/archive/v%s.tar.gz" % (version),
   keywords = 'automation github consensus git',
 
   classifiers = [
