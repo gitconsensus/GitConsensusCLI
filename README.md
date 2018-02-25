@@ -56,7 +56,7 @@ licensedelay: 72
 consensusdelay: 72
 
 # Do not allow license changes to be merged.
-lockconsensus: true
+locklicense: true
 
 # Do not allow consensus changes to be merged.
 lockconsensus: true
