@@ -6,7 +6,7 @@ import requests
 import yaml
 
 message_template = """
-This Pull Request has been %s by [GitConsensus](https://github.com/tedivm/GitConsensus).
+This Pull Request has been %s by [GitConsensus](https://www.gitconsensus.com/).
 
 ## Vote Totals
 
