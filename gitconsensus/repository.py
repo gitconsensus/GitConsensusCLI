@@ -93,7 +93,7 @@ class Repository:
 
     def isContributor(self, username):
         if not self.contributors:
-            contributor_list = self.repository.iter_contributors()
+            contributor_list = self.repository.contributors()
             self.contributors = [str(contributor) for contributor in contributor_list]
         return username in self.contributors
 
@@ -106,14 +106,22 @@ class Repository:
         return Consensus(self.rules)
 
     def setLabelColor(self, name, color):
-        try:
+        labels = self.get_labels()
+        if name not in labels:
             self.repository.create_label(name, color)
-        except:
-            self.repository.update_label(name, color)
+        elif color != labels[name].color:
+            labels[name].update(name, color)
+
+    def get_labels(self):
+        labels = {}
+        for label in self.repository.labels():
+            labels[label.name] = label
+        return labels
 
 
 class PullRequest:
     labels = False
+
     def __init__(self, repository, number):
         self.repository = repository
         self.consensus = repository.getConsensus()
@@ -148,7 +156,7 @@ class PullRequest:
                     continue
 
             if 'collaborators_only' in self.repository.rules and self.repository.rules['collaborators_only']:
-                if not isCollaborator(username):
+                if not self.repository.isCollaborator(username):
                     continue
 
             if 'contributors_only' in self.repository.rules and self.repository.rules['contributors_only']:
@@ -195,7 +203,7 @@ class PullRequest:
                 if self.repository.isContributor(user['login']):
                     self.contributors_abstain.append(user['login'])
 
-        files = self.pr.iter_files()
+        files = self.pr.files()
         self.changes_consensus = False
         self.changes_license = False
         for changed_file in files:
@@ -205,7 +213,7 @@ class PullRequest:
                 self.changes_license = True
 
     def hoursSinceLastCommit(self):
-        commits = self.pr.iter_commits()
+        commits = self.pr.commits()
 
         for commit in commits:
             commit_date_string = commit._json_data['commit']['author']['date']
@@ -366,7 +374,7 @@ class PullRequest:
     def getLabelList(self):
         if not self.labels:
             issue = self.getIssue()
-            self.labels = [item.name for item in issue.labels]
+            self.labels = [item.name for item in issue.labels()]
         return self.labels
 
     def isBlocked(self):
