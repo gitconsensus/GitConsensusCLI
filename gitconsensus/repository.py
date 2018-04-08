@@ -251,8 +251,10 @@ class PullRequest:
         return self.consensus.validate(self)
 
     def shouldClose(self):
-        if 'timeout' in self.repository.rules:
-            if self.hoursSinceLastUpdate() >= self.repository.rules['timeout']:
+        if 'pull_requests' not in self.repository.rules:
+            return False
+        if 'timeout' in self.repository.rules['pull_requests']:
+            if self.hoursSinceLastUpdate() >= self.repository.rules['pull_requests']['timeout']:
                 return True
         return False
 
