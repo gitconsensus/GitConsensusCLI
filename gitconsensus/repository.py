@@ -3,7 +3,11 @@ import datetime
 import github3
 import json
 import requests
+from semantic_version import Version
 import yaml
+
+# .gitconsensus.yaml files with versions higher than this will be ignored.
+max_consensus_version = Version('3.0.0', partial=True)
 
 message_template = """
 This Pull Request has been %s by [GitConsensus](https://www.gitconsensus.com/).
@@ -79,6 +83,11 @@ class Repository:
                     "consensus_lock": self.rules.get('lockconsensus', False),
                     "timeout": self.rules.get('timeout')
                 }
+
+            # Treat higher version consensus rules are an unconfigured repository.
+            project_consensus_version = Version(str(self.rules['version']), partial=True)
+            if max_consensus_version < project_consensus_version:
+                self.rules = False
 
     def getPullRequests(self):
         prs = self.repository.iter_pulls(state="open")
@@ -251,6 +260,8 @@ class PullRequest:
         return self.consensus.validate(self)
 
     def shouldClose(self):
+        if not self.repository.rules:
+            return False
         if 'pull_requests' not in self.repository.rules:
             return False
         if 'timeout' in self.repository.rules['pull_requests']:
@@ -265,6 +276,8 @@ class PullRequest:
         self.commentAction('closed')
 
     def vote_merge(self):
+        if not self.repository.rules:
+            return False
         self.pr.merge('GitConsensus Merge')
         self.addLabels(['gc-merged'])
         self.cleanInfoLabels()
@@ -393,6 +406,8 @@ class Consensus:
         self.rules = rules
 
     def validate(self, pr):
+        if not self.rules:
+            return False
         if pr.isBlocked():
             return False
         if not self.isAllowed(pr):
@@ -408,6 +423,8 @@ class Consensus:
         return True
 
     def isAllowed(self, pr):
+        if not self.rules:
+            return False
         if pr.changesLicense():
             if 'license_lock' in self.rules['pull_requests'] and self.rules['pull_requests']['license_lock']:
                 return False
@@ -417,17 +434,23 @@ class Consensus:
         return True
 
     def isMergeable(self, pr):
+        if not self.rules:
+            return False
         if not pr.pr.mergeable:
             return False
         return True
 
     def hasQuorum(self, pr):
+        if not self.rules:
+            return False
         if 'quorum' in self.rules['pull_requests']:
             if len(pr.users) < self.rules['pull_requests']['quorum']:
                 return False
         return True
 
     def hasVotes(self, pr):
+        if not self.rules:
+            return False
         if 'threshold' in self.rules['pull_requests']:
             total = (len(pr.yes) + len(pr.no))
             if total <= 0:
@@ -438,6 +461,8 @@ class Consensus:
         return True
 
     def hasAged(self, pr):
+        if not self.rules:
+            return False
         hours = pr.hoursSinceLastUpdate()
         if pr.changesLicense():
             if 'license_delay' in self.rules['pull_requests'] and self.rules['pull_requests']['license_delay']:

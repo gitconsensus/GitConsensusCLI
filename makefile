@@ -2,9 +2,11 @@
 SHELL:=/bin/bash
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-.PHONY: all fresh dependencies install fulluninstall uninstall removedeps
+.PHONY: all fresh dependencies clean package  
 
 all: dependencies
+
+fresh: clean dependencies
 
 clean:
 	rm -rf $(ROOT_DIR)/gitconsensus/*.pyc
