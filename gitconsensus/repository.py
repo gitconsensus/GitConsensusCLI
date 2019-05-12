@@ -56,7 +56,7 @@ class Repository:
         self.rules = False
         if res.status_code == 200:
             ruleresults = res.json()
-            self.rules = yaml.load(base64.b64decode(ruleresults['content']).decode('utf-8'))
+            self.rules = yaml.safe_load(base64.b64decode(ruleresults['content']).decode('utf-8'))
             # support older versions by converting from day to hours.
             if 'version' not in self.rules or self.rules['version'] < 2:
                 if 'mergedelay' in self.rules and self.rules['mergedelay']:
