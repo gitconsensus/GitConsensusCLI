@@ -13,7 +13,7 @@ except(IOError, ImportError):
     long_description = open('README.md').read()
 
 
-version = '0.7.2'
+version = '0.7.3'
 setup(
 
   name = 'gitconsensus',
@@ -44,10 +44,10 @@ setup(
   ],
 
   install_requires=[
-    'click>=6.0,<7.0',
+    'click>=6.0,<8.0',
     'github3.py>=1,<2',
-    'PyYAML>=3.12,<3.13',
-    'requests>=2.18.0,<2.19',
+    'PyYAML>=3.12,<6',
+    'requests>=2.18.0,<3',
     'semantic_version>=2.6.0,<3'
   ],
 
