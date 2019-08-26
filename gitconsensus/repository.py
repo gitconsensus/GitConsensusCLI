@@ -287,7 +287,7 @@ class PullRequest:
             'gc-voters %s' % (len(self.users),),
             'gc-yes %s' % (len(self.yes),),
             'gc-no %s' % (len(self.no),),
-            'gc-age %s' % (self.hoursSinceLastUpdate(),)
+            'gc-age %s' % (int(self.hoursSinceLastUpdate()),)
             ])
         self.commentAction('merged')
 
