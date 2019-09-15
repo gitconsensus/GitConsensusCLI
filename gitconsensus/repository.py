@@ -84,6 +84,9 @@ class Repository:
                     "timeout": self.rules.get('timeout')
                 }
 
+            if int(self.rules['pull_requests']['threshold']) > 1:
+                self.rules['pull_requests']['threshold'] /= 100
+
             # Treat higher version consensus rules are an unconfigured repository.
             project_consensus_version = Version(str(self.rules['version']), partial=True)
             if max_consensus_version < project_consensus_version:

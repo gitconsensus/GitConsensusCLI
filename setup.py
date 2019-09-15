@@ -2,18 +2,8 @@
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path
 
-here = path.abspath(path.dirname(__file__))
-
-try:
-    import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
-except(IOError, ImportError):
-    long_description = open('README.md').read()
-
-
-version = '0.7.5'
+version = '0.8.0'
 setup(
 
   name = 'gitconsensus',
@@ -22,7 +12,8 @@ setup(
   packages=find_packages(),
 
   description = 'Automate Github Pull Requests using Reactions',
-  long_description=long_description,
+  long_description=open('README.md').read(),
+  long_description_content_type="text/markdown",
   python_requires='>=3',
 
   author = 'Robert Hafner',
@@ -53,7 +44,6 @@ setup(
 
   extras_require={
     'dev': [
-      'pypandoc',
       'twine',
       'wheel'
     ],
