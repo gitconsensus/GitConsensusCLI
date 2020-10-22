@@ -49,6 +49,9 @@ setup(
     ],
   },
 
+  setup_requires=["pytest-runner"],
+  tests_require=["freezegun", "pytest", "pytest-cov", "pytest-mock"],
+
   entry_points={
     'console_scripts': [
       'gitconsensus=gitconsensus.gitconsensus:cli',
