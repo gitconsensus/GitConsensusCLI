@@ -19,5 +19,8 @@ dependencies:
 	if [ ! -d $(ROOT_DIR)/env ]; then python3 -m venv $(ROOT_DIR)/env; fi
 	source $(ROOT_DIR)/env/bin/activate; yes w | python -m pip install -e .[dev]
 
+test:
+	python setup.py test
+
 package:
 	source $(ROOT_DIR)/env/bin/activate; python setup.py bdist_wheel
