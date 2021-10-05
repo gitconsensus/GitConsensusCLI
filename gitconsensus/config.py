@@ -15,7 +15,7 @@ def reloadSettings():
     global settings
     if os.path.isfile(path):
         with open(path, 'r') as f:
-            settings = yaml.load(f)
+            settings = yaml.safe_load(f)
     return settings
 
 
